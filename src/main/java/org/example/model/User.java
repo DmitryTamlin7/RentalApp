@@ -36,6 +36,7 @@ public class User {
 
 
 
+
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
