@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/rentaldb
+    username: rental
+    password: rentalpass
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
