@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: rentaldb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: Soadsvanpjz228123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U rental"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build with Gradle
+        run: ./gradlew clean build --no-daemon
+
+      - name: Run application
+        run: ./gradlew bootRun &
+
+      - name: Wait for server
+        run: |
+          echo "Waiting for Spring Boot to start..."
+          sleep 20
+
+      - name: Create initial users
+        run: |
+          curl -X POST http://localhost:8080/api/users \
+          -H "Content-Type: application/json" \
+          -d '{"email":"user1@mail.com","password":"111","fullName":"Peter Great","role":"USER"}'
+          
+          curl -X POST http://localhost:8080/api/users \
+          -H "Content-Type: application/json" \
+          -d '{"email":"user2@mail.com","password":"222","fullName":"Anna Smith","role":"USER"}'
+
+      - name: Create properties
+        run: |
+          curl -X POST http://localhost:8080/api/properties \
+          -H "Content-Type: application/json" \
+          -d '{"ownerId":1,"address":"10 Main St","description":"Central apartment"}'
+          
+          curl -X POST http://localhost:8080/api/properties \
+          -H "Content-Type: application/json" \
+          -d '{"ownerId":2,"address":"25 Oak St","description":"House with yard"}'
+
+      - name: Create bookings
+        run: |
+          curl -X POST http://localhost:8080/api/bookings \
+          -H "Content-Type: application/json" \
+          -d '{"tenantId":1,"propertyId":1,"startDate":"2025-10-17","endDate":"2025-10-20"}'
+          
+          curl -X POST http://localhost:8080/api/bookings \
+          -H "Content-Type: application/json" \
+          -d '{"tenantId":2,"propertyId":2,"startDate":"2025-10-18","endDate":"2025-10-22"}'
