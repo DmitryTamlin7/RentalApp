@@ -51,7 +51,7 @@ jobs:
         run: |
           echo "Waiting for the server..."
           for i in {1..30}; do
-            if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+            if curl -s http://localhost:8080/api/health | grep -q '"status":"UP"'; then
               echo " Spring Boot is UP"
               exit 0
             fi
