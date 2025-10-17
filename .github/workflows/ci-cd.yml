@@ -46,32 +46,30 @@ jobs:
           echo "Waiting for Spring Boot to start..."
           sleep 20
 
-      - name: Create initial users
-        run: |
-          curl -X POST http://localhost:8080/api/users \
-          -H "Content-Type: application/json" \
-          -d '{"email":"user1@mail.com","password":"111","fullName":"Peter Great","role":"USER"}'
-          
-          curl -X POST http://localhost:8080/api/users \
-          -H "Content-Type: application/json" \
-          -d '{"email":"user2@mail.com","password":"222","fullName":"Anna Smith","role":"USER"}'
 
-      - name: Create properties
+      - name:  Wait for server to start
         run: |
-          curl -X POST http://localhost:8080/api/properties \
-          -H "Content-Type: application/json" \
-          -d '{"ownerId":1,"address":"10 Main St","description":"Central apartment"}'
-          
-          curl -X POST http://localhost:8080/api/properties \
-          -H "Content-Type: application/json" \
-          -d '{"ownerId":2,"address":"25 Oak St","description":"House with yard"}'
+          echo "Waiting for the server..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo " Spring Boot is UP"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo " Server did not start in time"
+          exit 1
 
-      - name: Create bookings
+      - name:  Check endpoints
         run: |
-          curl -X POST http://localhost:8080/api/bookings \
-          -H "Content-Type: application/json" \
-          -d '{"tenantId":1,"propertyId":1,"startDate":"2025-10-17","endDate":"2025-10-20"}'
-          
-          curl -X POST http://localhost:8080/api/bookings \
-          -H "Content-Type: application/json" \
-          -d '{"tenantId":2,"propertyId":2,"startDate":"2025-10-18","endDate":"2025-10-22"}'
+          endpoints=(/api/users /api/properties /api/bookings)
+          for endpoint in "${endpoints[@]}"; do
+            echo "Checking $endpoint ..."
+            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080$endpoint)
+            if [ "$response" = "200" ]; then
+              echo " $endpoint works (HTTP 200)"
+            else
+              echo " $endpoint failed (HTTP $response)"
+              exit 1
+            fi
+          done
