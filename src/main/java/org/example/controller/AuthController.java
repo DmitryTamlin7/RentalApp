@@ -1,7 +1,7 @@
 package org.example.controller;
 
 import org.example.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,23 +9,24 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+
+    public AuthController(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials){
-        String username = credentials.get("username");
-        String password = credentials.get("password");
+    public ResponseEntity<?> login(@RequestBody Map<String, String> user) {  // ← ? вместо String
+        String username = user.get("username");
+        String password = user.get("password");
 
-        //NO Postgres
-        if("user".equals(username) && "1234".equals(password)){
+        if ("user".equals(username) && "1234".equals(password)) {
             String token = jwtUtil.generateToken(username);
-            return ResponseEntity.ok(Map.of("token", token));
-        }else return ResponseEntity.status(401).body("Invalid credentials");
+            return ResponseEntity.ok(Map.of("token", token));  // ← JSON объект
+        }
 
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
     }
 }
-

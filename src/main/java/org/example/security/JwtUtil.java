@@ -1,37 +1,37 @@
 package org.example.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;  // ← ДОБАВЬ этот импорт
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private static final String SECRET_KEY = "MEGA_seCreT292_03)$%hd8s((UNujds^83n%@94w4he-3999";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60;
-    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    public String generateToken(String username){
-        return Jwts.builder().setSubject(username)
+    private final String secret = "MY_sect83n(u3n8&#fiwdinfue^#NDJH$(VHR$hf*_#823hf3";
+    private final SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+    public String generateToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(key, SignatureAlgorithm.ES256)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .signWith(key)  // ← key вместо (SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 
-    public  String validateToken(String token) {
+    public String validateToken(String token) {
         try {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
-    } catch (JwtException e){
+            return Jwts.parserBuilder()  // ← parserBuilder()
+                    .setSigningKey(key)    // ← key
+                    .build()               // ← build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (Exception e) {
             return null;
         }
     }
