@@ -18,13 +18,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> user) {  // ← ? вместо String
+    public ResponseEntity<?> login(@RequestBody Map<String, String> user) {
         String username = user.get("username");
         String password = user.get("password");
 
         if ("user".equals(username) && "1234".equals(password)) {
             String token = jwtUtil.generateToken(username);
-            return ResponseEntity.ok(Map.of("token", token));  // ← JSON объект
+            return ResponseEntity.ok(Map.of("token", token));
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));

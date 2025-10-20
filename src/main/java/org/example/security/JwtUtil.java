@@ -1,7 +1,7 @@
 package org.example.security;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;  // ← ДОБАВЬ этот импорт
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -19,15 +19,15 @@ public class JwtUtil {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
-                .signWith(key)  // ← key вместо (SignatureAlgorithm.HS256, secret)
+                .signWith(key)
                 .compact();
     }
 
     public String validateToken(String token) {
         try {
-            return Jwts.parserBuilder()  // ← parserBuilder()
-                    .setSigningKey(key)    // ← key
-                    .build()               // ← build()
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
                     .parseClaimsJws(token)
                     .getBody()
                     .getSubject();

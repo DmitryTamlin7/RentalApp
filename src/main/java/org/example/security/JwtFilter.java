@@ -1,4 +1,3 @@
-// src/main/java/org/example/security/JwtAuthenticationFilter.java
 package org.example.security;
 
 import jakarta.servlet.FilterChain;
