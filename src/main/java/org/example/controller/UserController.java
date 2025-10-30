@@ -6,6 +6,7 @@ import org.example.dto.UserUpdateRequest;
 import org.example.model.User;
 import org.example.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,30 +33,32 @@ public class UserController {
         return userService.createUser(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<User> getAll() {
         return userService.getAllUsers();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public User getById(@PathVariable Long id) {
         return userService.getUserById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/fullname")
     public User updateFullName(@PathVariable Long id, @RequestBody UserUpdateRequest dto) {
         return userService.updateUserFullName(id, dto.fullName());
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public User updateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         return userService.updateUser(id, updates);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         userService.deleteUser(id);

@@ -6,6 +6,7 @@ import org.example.dto.PropertyRequest;
 import org.example.model.Property;
 import org.example.service.PropertyService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class PropertyController {
         this.propertyService = propertyService;
     }
 
+    @PreAuthorize("hasRole('LANDLORD')")
     @PostMapping
     public ResponseEntity<Property> createProperty(@RequestBody PropertyRequest request) {
         Property property = propertyService.createProperty(request);
@@ -35,7 +37,7 @@ public class PropertyController {
     public ResponseEntity<Property> getPropertyById(@PathVariable Long id) {
         return ResponseEntity.ok(propertyService.getPropertyById(id));
     }
-
+    @PreAuthorize("hasRole('LANDLORD')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProperty(@PathVariable Long id) {
         propertyService.deleteProperty(id);
