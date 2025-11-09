@@ -1,3 +1,11 @@
 package org.example.dto;
 
-public record LoginRequest(String email, String password) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record LoginRequest(
+        @NotBlank(message = "Email обязателен")
+        String email,
+
+        @NotBlank(message = "Пароль обязателен")
+        String password
+) {}
