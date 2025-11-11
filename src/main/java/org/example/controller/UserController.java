@@ -33,13 +33,13 @@ public class UserController {
         return userService.createUser(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @GetMapping
     public List<User> getAll() {
         return userService.getAllUsers();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @GetMapping("/{id}")
     public User getById(@PathVariable Long id) {
         return userService.getUserById(id)

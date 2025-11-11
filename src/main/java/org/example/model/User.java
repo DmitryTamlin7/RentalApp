@@ -41,13 +41,14 @@ public class User implements UserDetails {
 
 
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @Builder.Default
     private List<Property> properties = new ArrayList<>();
 
-    @OneToMany(mappedBy = "tenant")
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
 
     @Override

@@ -20,7 +20,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailsServiceImpl userDetailsService;  // ← Прямая зависимость
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -31,18 +31,26 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            String username = jwtUtil.validateToken(token);
+            String username = jwtUtil.extractUsername(token);
+
+            System.out.println("JWT Filter: Token received for user: " + username);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
 
-                // ЛОГИРУЕМ РОЛИ
-                System.out.println("USER: " + username + " | ROLES: " + userDetails.getAuthorities());
+                if (jwtUtil.isTokenValid(token, username)) {
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+
+                    System.out.println("JWT Filter: AUTHENTICATED! Roles: " + userDetails.getAuthorities());
+                } else {
+                    System.out.println("JWT Filter: Token INVALID or EXPIRED");
+                }
             }
+        } else {
+            System.out.println("JWT Filter: No Bearer token in request");
         }
 
         filterChain.doFilter(request, response);

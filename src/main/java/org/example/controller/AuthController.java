@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.LoginRequest;
 import org.example.dto.RegisterRequest;
+import org.example.dto.UserResponse;
 import org.example.model.User;
 import org.example.repository.UserRepository;
 import org.example.security.JwtUtil;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Map;
 
 @RestController
@@ -32,13 +34,22 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.email(),
-                        loginRequest.password()
-                )
+                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
-        String token = jwtUtil.generateToken(authentication.getName());
-        return ResponseEntity.ok(Map.of("token", token));
+
+        // Находим пользователя в БД по email
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found after authentication"));
+
+        String token = jwtUtil.generateToken(user.getEmail());
+
+
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "role", user.getRole()
+        ));
     }
 
     /**
@@ -60,4 +71,5 @@ public class AuthController {
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "User registered successfully"));
     }
+
 }

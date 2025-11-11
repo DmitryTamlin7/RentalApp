@@ -35,5 +35,6 @@ public class Booking {
     private Property property;
 
     @Column(nullable = false)
+    @Builder.Default
     private String status = "active";
 }
