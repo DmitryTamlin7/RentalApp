@@ -39,6 +39,9 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
                         .requestMatchers("/api/properties/**").hasRole("LANDLORD")
+                        .requestMatchers("/api/bookings/**").hasAnyRole("TENANT", "LANDLORD")
+                        .requestMatchers("/api/dashboard/landlord/**").hasRole("LANDLORD")
+                        .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

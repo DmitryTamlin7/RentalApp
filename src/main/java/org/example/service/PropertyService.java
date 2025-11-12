@@ -98,7 +98,6 @@ public class PropertyService {
         propertyRepository.delete(property);
     }
 
-    // === ПОЛУЧЕНИЕ ПО ID (для редактирования) ===
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('LANDLORD')")
     public Property getPropertyById(Long id, Principal principal) {
@@ -122,6 +121,12 @@ public class PropertyService {
         long available = total - rented;
 
         return new LandlordStats(total, rented, available);
+    }
+
+    public Long getUserIdByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
     }
 
     // === Внутренний класс для статистики ===

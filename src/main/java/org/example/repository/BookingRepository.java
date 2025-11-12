@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,5 +16,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.property.id = :propertyId " +
             "AND b.status = 'ACTIVE'")
     Optional<Booking> findActiveByPropertyId(@Param("propertyId") Long propertyId);
+
+    List<Booking> findByPropertyOwnerId(Long ownerId);
+
+    List<Booking> findByTenantId(Long id);
 }
 

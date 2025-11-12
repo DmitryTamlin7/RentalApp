@@ -65,4 +65,8 @@ public class BookingService {
         booking.setStatus("cancelled");
         bookingRepository.save(booking);
     }
+
+    public List<Booking> getBookingsByLandlordId(Long landlordId) {
+        return bookingRepository.findByPropertyOwnerId(landlordId);
+    }
 }
