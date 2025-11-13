@@ -56,7 +56,7 @@ public class PropertyService {
     }
 
     // === DTO ПРЕОБРАЗОВАНИЕ ===
-    private PropertyCardDto toCardDto(Property property) {
+    public PropertyCardDto toCardDto(Property property) {
         PropertyCardDto dto = new PropertyCardDto();
         dto.setId(property.getId());
         dto.setAddress(property.getAddress());
@@ -111,7 +111,6 @@ public class PropertyService {
         return property;
     }
 
-    // === СТАТИСТИКА (опционально) ===
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('LANDLORD')")
     public LandlordStats getStats(Principal principal) {
@@ -131,4 +130,22 @@ public class PropertyService {
 
     // === Внутренний класс для статистики ===
     public record LandlordStats(long total, long rented, long available) {}
+
+    // PropertyService.java
+    @Transactional
+    @PreAuthorize("hasRole('LANDLORD')")
+    public Property updateProperty(Long id, PropertyRequest request, Principal principal) {
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        if (!property.getOwner().getEmail().equals(principal.getName())) {
+            throw new RuntimeException("You can only update your own properties");
+        }
+
+        property.setAddress(request.getAddress());
+        property.setDescription(request.getDescription());
+        property.setPricePerMonth(request.getPricePerMonth());
+
+        return propertyRepository.save(property);
+    }
 }

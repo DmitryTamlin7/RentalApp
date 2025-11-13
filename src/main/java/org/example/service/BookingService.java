@@ -34,6 +34,7 @@ public class BookingService {
                 .property(property)
                 .startDate(start)
                 .endDate(end)
+                .monthlyRent(property.getPricePerMonth())
                 .status("active")
                 .build();
 

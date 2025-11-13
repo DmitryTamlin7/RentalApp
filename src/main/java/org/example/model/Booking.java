@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Booking {
 
     @Id
@@ -33,6 +34,9 @@ public class Booking {
     @JoinColumn(name = "property_id")
     @JsonBackReference
     private Property property;
+
+    @Column(name = "monthly_rent")
+    private Integer monthlyRent;
 
     @Column(nullable = false)
     @Builder.Default

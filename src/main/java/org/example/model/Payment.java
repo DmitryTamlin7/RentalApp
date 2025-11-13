@@ -1,5 +1,6 @@
 package org.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Payment {
 
     @Id
@@ -21,6 +23,7 @@ public class Payment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "tenant", "property"})
     private Booking booking;
 
     @Column(nullable = false)
@@ -43,6 +46,7 @@ public class Payment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "properties", "bookings"})
     private User createdBy; // LANDLORD
 
     // === Удобные методы ===

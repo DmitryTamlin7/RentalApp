@@ -36,7 +36,6 @@ public class PropertyController {
         return ResponseEntity.ok(properties);
     }
 
-    // === ПОЛУЧЕНИЕ ПО ID (ДЛЯ РЕДАКТИРОВАНИЯ) ===
     @GetMapping("/{id}")
     public ResponseEntity<Property> getPropertyById(
             @PathVariable Long id,
@@ -60,4 +59,17 @@ public class PropertyController {
         PropertyService.LandlordStats stats = propertyService.getStats(principal);
         return ResponseEntity.ok(stats);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PropertyCardDto> updateProperty(
+            @PathVariable Long id,
+            @RequestBody PropertyRequest request,
+            Principal principal) {
+
+        Property property = propertyService.updateProperty(id, request, principal);
+        PropertyCardDto dto = propertyService.toCardDto(property);
+        return ResponseEntity.ok(dto);
+    }
+
+
 }
