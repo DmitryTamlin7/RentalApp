@@ -15,12 +15,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/properties")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('LANDLORD')") // ← ВСЁ ЗАЩИЩЕНО
+@PreAuthorize("hasRole('LANDLORD')")
 public class PropertyController {
 
     private final PropertyService propertyService;
 
-    // === СОЗДАНИЕ ОБЪЕКТА ===
+
     @PostMapping
     public ResponseEntity<Property> createProperty(
             @RequestBody PropertyRequest request,
@@ -29,7 +29,7 @@ public class PropertyController {
         return ResponseEntity.ok(property);
     }
 
-    // === СПИСОК ДЛЯ ДАШБОРДА (ТОЛЬКО СВОИ) ===
+
     @GetMapping("/my")
     public ResponseEntity<List<PropertyCardDto>> getMyProperties(Principal principal) {
         List<PropertyCardDto> properties = propertyService.getLandlordProperties(principal);
@@ -44,7 +44,7 @@ public class PropertyController {
         return ResponseEntity.ok(property);
     }
 
-    // === УДАЛЕНИЕ ===
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProperty(
             @PathVariable Long id,
@@ -53,7 +53,7 @@ public class PropertyController {
         return ResponseEntity.noContent().build();
     }
 
-    // === СТАТИСТИКА (ОПЦИОНАЛЬНО) ===
+
     @GetMapping("/stats")
     public ResponseEntity<PropertyService.LandlordStats> getStats(Principal principal) {
         PropertyService.LandlordStats stats = propertyService.getStats(principal);

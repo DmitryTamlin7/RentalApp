@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# === НАСТРОЙКИ ===
+
 BASE_URL="http://localhost:8080"
 EMAIL="landlord@example.com"
 PASSWORD="password123"
 ROLE="LANDLORD"
 
-# Цвета
+
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
@@ -15,7 +15,7 @@ NC='\033[0m'
 echo -e "${YELLOW}ЗАПУСК ТЕСТА ДАШБОРДА — $(date '+%Y-%m-%d %H:%M:%S EET')${NC}"
 echo "================================================"
 
-# === 1. РЕГИСТРАЦИЯ ===
+
 echo -e "${YELLOW}1. Регистрация пользователя...${NC}"
 REGISTER_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/register" \
   -H "Content-Type: application/json" \
@@ -27,7 +27,7 @@ else
   echo -e "${GREEN}Регистрация успешна${NC}"
 fi
 
-# === 2. ЛОГИН ===
+
 echo -e "${YELLOW}2. Логин...${NC}"
 LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" \
@@ -45,7 +45,7 @@ fi
 echo -e "${GREEN}Логин успешен. ID: $USER_ID${NC}"
 echo "------------------------------------------------"
 
-# === 3. СОЗДАНИЕ ОБЪЕКТА ===
+
 echo -e "${YELLOW}3. Создание объекта недвижимости...${NC}"
 CREATE_RESPONSE=$(curl -s -X POST "$BASE_URL/api/properties" \
   -H "Authorization: Bearer $TOKEN" \
@@ -66,14 +66,14 @@ fi
 echo -e "${GREEN}Объект создан! ID: $PROPERTY_ID${NC}"
 echo "------------------------------------------------"
 
-# === 4. ДАШБОРД: СПИСОК ОБЪЕКТОВ ===
+
 echo -e "${YELLOW}4. Получение дашборда...${NC}"
 DASHBOARD_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" \
   "$BASE_URL/api/dashboard/landlord/properties")
 
 echo "$DASHBOARD_RESPONSE" | jq
 
-# Проверка: есть ли наш объект?
+
 if echo "$DASHBOARD_RESPONSE" | grep -q "$PROPERTY_ID"; then
   echo -e "${GREEN}ДАШБОРД: Объект найден в списке${NC}"
 else
@@ -81,7 +81,7 @@ else
   exit 1
 fi
 
-# === 5. СТАТИСТИКА ===
+
 echo -e "${YELLOW}5. Получение статистики...${NC}"
 STATS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" \
   "$BASE_URL/api/dashboard/landlord/stats")
@@ -96,7 +96,7 @@ else
   exit 1
 fi
 
-# === 6. УДАЛЕНИЕ ОБЪЕКТА ===
+
 echo -e "${YELLOW}6. Удаление объекта (ID: $PROPERTY_ID)...${NC}"
 DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
   -H "Authorization: Bearer $TOKEN" \
@@ -109,7 +109,6 @@ else
   exit 1
 fi
 
-# === ФИНАЛ ===
 echo "================================================"
 echo -e "${GREEN}ВСЁ УСПЕШНО! ДАШБОРД РАБОТАЕТ!$(date '+%H:%M:%S EET')${NC}"
 echo "Тест завершён: $EMAIL | Объектов создано и удалено: 1"

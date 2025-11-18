@@ -25,7 +25,7 @@ public class PropertyService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
 
-    // === СОЗДАНИЕ ОБЪЕКТА ===
+
     @Transactional
     public Property createProperty(PropertyRequest request, Principal principal) {
         User owner = userRepository.findByEmail(principal.getName())
@@ -43,7 +43,7 @@ public class PropertyService {
         return propertyRepository.save(property);
     }
 
-    // === СПИСОК ДЛЯ ДАШБОРДА (ТОЛЬКО СВОИ ОБЪЕКТЫ) ===
+
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('LANDLORD')")
     public List<PropertyCardDto> getLandlordProperties(Principal principal) {
@@ -55,14 +55,14 @@ public class PropertyService {
                 .toList();
     }
 
-    // === DTO ПРЕОБРАЗОВАНИЕ ===
+
     public PropertyCardDto toCardDto(Property property) {
         PropertyCardDto dto = new PropertyCardDto();
         dto.setId(property.getId());
         dto.setAddress(property.getAddress());
         dto.setPricePerMonth(property.getPricePerMonth());
 
-        // Ищем активную бронь
+
         Booking activeBooking = bookingRepository.findActiveByPropertyId(property.getId()).orElse(null);
         if (activeBooking != null && activeBooking.getTenant() != null) {
             String fullName = activeBooking.getTenant().getFullName();
@@ -128,10 +128,10 @@ public class PropertyService {
                 .getId();
     }
 
-    // === Внутренний класс для статистики ===
+
     public record LandlordStats(long total, long rented, long available) {}
 
-    // PropertyService.java
+
     @Transactional
     @PreAuthorize("hasRole('LANDLORD')")
     public Property updateProperty(Long id, PropertyRequest request, Principal principal) {

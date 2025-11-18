@@ -24,7 +24,6 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final UserRepository userRepository;
 
-    // === LANDLORD: Создать запрос на оплату ===
     @PostMapping("/request")
     @PreAuthorize("hasRole('LANDLORD')")
     public ResponseEntity<?> createPaymentRequest(
@@ -46,7 +45,6 @@ public class PaymentController {
         ));
     }
 
-    // === TENANT: Я оплатил ===
     @PostMapping("/{id}/tenant-paid")
     @PreAuthorize("hasRole('TENANT')")
     public ResponseEntity<?> markAsPaid(@PathVariable Long id, Principal principal) {
@@ -55,7 +53,6 @@ public class PaymentController {
         return ResponseEntity.ok("Оплата отмечена");
     }
 
-    // === LANDLORD: Подтвердить оплату ===
     @PostMapping("/{id}/confirm")
     @PreAuthorize("hasRole('LANDLORD')")
     public ResponseEntity<?> confirmPayment(@PathVariable Long id, Principal principal) {
@@ -64,7 +61,7 @@ public class PaymentController {
         return ResponseEntity.ok("Оплата подтверждена");
     }
 
-    // === TENANT: Мои платежи ===
+
     @GetMapping("/my")
     @PreAuthorize("hasRole('TENANT')")
     public ResponseEntity<List<Payment>> getMyPayments(Principal principal) {
@@ -72,7 +69,7 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getPaymentsByTenantId(tenant.getId()));
     }
 
-    // === LANDLORD: Платежи по брони ===
+
     @GetMapping("/booking/{bookingId}")
     @PreAuthorize("hasRole('LANDLORD')")
     public ResponseEntity<List<Payment>> getPaymentsByBooking(

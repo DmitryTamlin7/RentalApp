@@ -35,7 +35,7 @@ public class BookingController {
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Проверка: tenantId должен совпадать с текущим пользователем
+
         if (!request.getTenantId().equals(currentUser.getId())) {
             return ResponseEntity.status(403)
                     .body(Map.of("error", "You can only book for yourself"));

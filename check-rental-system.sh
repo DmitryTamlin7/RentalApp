@@ -24,11 +24,11 @@ if [ -z "$TOKEN" ]; then
 fi
 echo -e "${GREEN}Вошёл! Токен получен${NC}"
 
-# === 2. Выбираем объект (любой из твоих) ===
-PROPERTY_ID=15  # ← используем существующий объект ID 15
+
+PROPERTY_ID=15
 echo -e "${YELLOW}2. Используем объект ID: $PROPERTY_ID${NC}"
 
-# === 3. Прямое бронирование для tenant@test.com ===
+
 echo -e "${YELLOW}3. Создание брони для tenant@test.com...${NC}"
 BOOKING_RES=$(curl -s -X POST "$BASE_URL/api/dashboard/landlord/bookings/direct" \
   -H "Authorization: Bearer $TOKEN" \
@@ -55,7 +55,7 @@ curl -s -X POST "$BASE_URL/api/dashboard/landlord/bookings/$BOOKING_ID/confirm" 
 
 echo -e "${GREEN}Бронь подтверждена!${NC}"
 
-# === ФИНАЛ ===
+
 echo "----------------------------------------"
 echo -e "${GREEN}ГОТОВО!${NC}"
 echo "LANDLORD: ID 33 (landlord@test.com)"

@@ -31,7 +31,6 @@ public class LandlordDashboardController {
     private final PropertyRepository propertyRepository;
     private final BookingRepository bookingRepository;
 
-    // === СВОЙСТВА ===
     @GetMapping("/properties")
     public ResponseEntity<List<PropertyCardDto>> getProperties(Principal principal) {
         return ResponseEntity.ok(propertyService.getLandlordProperties(principal));
@@ -48,7 +47,6 @@ public class LandlordDashboardController {
         return ResponseEntity.noContent().build();
     }
 
-    // === БРОНИРОВАНИЯ ===
     @GetMapping("/bookings")
     public ResponseEntity<List<Booking>> getBookings(Principal principal) {
         Long landlordId = getCurrentUserId(principal);
@@ -70,7 +68,6 @@ public class LandlordDashboardController {
         return ResponseEntity.ok("Бронь отклонена");
     }
 
-    // === ПРЯМОЕ БРОНИРОВАНИЕ ПО EMAIL ===
     @PostMapping("/bookings/direct")
     public ResponseEntity<Map<String, Object>> createDirectBooking(
             @RequestBody DirectBookingRequest request,
@@ -107,7 +104,6 @@ public class LandlordDashboardController {
         ));
     }
 
-    // === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
     private Long getCurrentUserId(Principal principal) {
         return getCurrentUser(principal).getId();
     }

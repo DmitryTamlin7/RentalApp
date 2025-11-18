@@ -13,7 +13,6 @@ ROLE="LANDLORD"
 echo -e "${YELLOW}Запуск: $(TZ='Europe/Tallinn' date '+%Y-%m-%d %H:%M:%S EET')${NC}"
 echo "================================================"
 
-# === 1. РЕГИСТРАЦИЯ (опционально) ===
 echo -e "${YELLOW}1. Регистрация (если нужно)${NC}"
 REGISTER_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/register" \
   -H "Content-Type: application/json" \
@@ -26,7 +25,6 @@ else
 fi
 echo "------------------------------------------------"
 
-# === 2. ЛОГИН ===
 echo -e "${YELLOW}2. Логин${NC}"
 LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" \
@@ -44,7 +42,7 @@ fi
 echo -e "${GREEN}Успешный логин: ID=$USER_ID${NC}"
 echo "------------------------------------------------"
 
-# === 3. СОЗДАНИЕ PROPERTY ===
+
 echo -e "${YELLOW}3. Создание недвижимости (ownerId: $USER_ID)${NC}"
 
 PROPERTY_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$BASE_URL/api/properties" \

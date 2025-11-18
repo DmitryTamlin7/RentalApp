@@ -33,7 +33,7 @@ public class Payment {
     private String description;
 
     @Column(nullable = false)
-    private String status; // pending, tenant_paid, confirmed
+    private String status;
 
     @Column(name = "requested_at", nullable = false)
     private LocalDateTime requestedAt;

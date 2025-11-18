@@ -22,9 +22,9 @@ public class Property {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY) // ЛУЧШЕ LAZY
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
-    @JsonIgnoreProperties({"properties", "bookings", "roles", "password"}) // важно!
+    @JsonIgnoreProperties({"properties", "bookings", "roles", "password"})
     private User owner;
 
     @Column(name = "address", nullable = false)

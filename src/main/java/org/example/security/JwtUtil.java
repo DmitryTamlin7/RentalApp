@@ -16,7 +16,6 @@ public class JwtUtil {
     private final SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 час
 
-    // Генерация токена
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -26,12 +25,12 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Извлечение username
+
     public String extractUsername(String token) {
         return parseClaims(token).getSubject();
     }
 
-    // Проверка валидности
+
     public boolean isTokenValid(String token, String username) {
         try {
             String tokenUsername = extractUsername(token);
