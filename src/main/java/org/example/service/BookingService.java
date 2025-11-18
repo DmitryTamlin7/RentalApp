@@ -34,6 +34,7 @@ public class BookingService {
                 .property(property)
                 .startDate(start)
                 .endDate(end)
+                .monthlyRent(property.getPricePerMonth())
                 .status("active")
                 .build();
 
@@ -64,5 +65,9 @@ public class BookingService {
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         booking.setStatus("cancelled");
         bookingRepository.save(booking);
+    }
+
+    public List<Booking> getBookingsByLandlordId(Long landlordId) {
+        return bookingRepository.findByPropertyOwnerId(landlordId);
     }
 }

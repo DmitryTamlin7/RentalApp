@@ -15,15 +15,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Property {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
-    @JsonIgnoreProperties({"properties", "bookings"})
+    @JsonIgnoreProperties({"properties", "bookings", "roles", "password"})
     private User owner;
 
     @Column(name = "address", nullable = false)
@@ -32,10 +33,15 @@ public class Property {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "price_per_month", nullable = false)
+    private Integer pricePerMonth;
+
     @Column(nullable = false)
+    @Builder.Default
     private String status = "active";
 
     @Column(name = "created_at", nullable = false)
+    @Builder.Default
     private LocalDateTime created_at = LocalDateTime.now();
 
     @OneToMany(mappedBy = "property")
