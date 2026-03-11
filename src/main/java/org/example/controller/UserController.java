@@ -37,6 +37,20 @@ public class UserController {
         return userService.createUser(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String newRole = body.get("role");
+        if (newRole == null) return ResponseEntity.badRequest().body(Map.of("error", "Role is missing"));
+
+        User updatedUser = userService.changeUserRole(id, newRole);
+        return ResponseEntity.ok(Map.of(
+                "message", "Роль пользователя успешно изменена",
+                "email", updatedUser.getEmail(),
+                "newRole", updatedUser.getRole()
+        ));
+    }
+
 
     @GetMapping
     public List<User> getAll() {

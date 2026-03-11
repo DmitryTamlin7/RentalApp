@@ -60,4 +60,11 @@ public class UserService {
         }
         userRepository.deleteById(id);
     }
+
+    public User changeUserRole(Long id, String newRole) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        user.setRole(newRole.toUpperCase());
+        return userRepository.save(user);
+    }
 }

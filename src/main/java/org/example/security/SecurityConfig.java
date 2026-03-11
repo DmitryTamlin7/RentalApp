@@ -37,11 +37,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/api/users").permitAll()
-                        .requestMatchers("/api/properties/**").hasRole("LANDLORD")
-                        .requestMatchers("/api/bookings/**").hasAnyRole("TENANT", "LANDLORD")
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/*/role").hasRole("ADMIN")
                         .requestMatchers("/api/dashboard/landlord/**").hasRole("LANDLORD")
-                        .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/api/properties/**").hasRole("LANDLORD")
+                        .requestMatchers("/api/users/profile").authenticated()
+                        .requestMatchers("/api/bookings/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

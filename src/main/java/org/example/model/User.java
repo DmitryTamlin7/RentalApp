@@ -1,9 +1,7 @@
 package org.example.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,9 +38,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String role = "USER";
 
-
-
-
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     @Builder.Default
@@ -53,9 +48,11 @@ public class User implements UserDetails {
     @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
 
+    // --- Логика Spring Security ---
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        String roleName = role.startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase();
+        return List.of(new SimpleGrantedAuthority(roleName));
     }
 
     @Override
