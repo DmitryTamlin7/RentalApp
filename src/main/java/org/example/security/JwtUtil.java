@@ -14,7 +14,7 @@ public class JwtUtil {
 
     private final String secret = "MY_sect83n(u3n8&#fiwdinfue^#NDJH$(VHR$hf*_#823hf3";
     private final SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 час
+    private final long EXPIRATION_TIME = 1000 * 60 * 15;
 
     public String generateToken(String username) {
         return Jwts.builder()

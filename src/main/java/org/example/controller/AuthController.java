@@ -2,68 +2,41 @@ package org.example.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.dto.JwtResponse;
 import org.example.dto.LoginRequest;
-import org.example.dto.RegisterRequest;
-import org.example.dto.UserResponse;
-import org.example.model.User;
-import org.example.repository.UserRepository;
-import org.example.security.JwtUtil;
+import org.example.dto.TokenRefreshRequest;
+import org.example.service.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.Map;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
+    private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
-        );
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        JwtResponse response = authService.authenticateUser(loginRequest);
+        return ResponseEntity.ok(response);
+    }
 
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found after authentication"));
-
-        String token = jwtUtil.generateToken(user.getEmail());
-
-
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
+        String newAccessToken = authService.refreshAccessToken(request);
         return ResponseEntity.ok(Map.of(
-                "token", token,
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "role", user.getRole()
+                "accessToken", newAccessToken,
+                "refreshToken", request.getRefreshToken()
         ));
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        if (userRepository.findByEmail(request.email()).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Email already exists"));
-        }
-
-        User user = User.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .fullName(request.fullName())
-                .role(request.role() != null ? request.role() : "TENANT")
-                .build();
-
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(@RequestBody Map<String, Long> body) {
+        authService.logout(body.get("userId"));
+        return ResponseEntity.ok("Logged out successfully");
     }
-
 }
