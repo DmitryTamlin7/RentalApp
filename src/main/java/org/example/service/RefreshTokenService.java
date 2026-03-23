@@ -13,7 +13,7 @@ import java.util.UUID;
 @Service
 public class RefreshTokenService {
 
-    private final Long REFRESH_EXPIRATION_MS = 1000L * 60 * 60 * 24 * 2;
+    private final Long REFRESH_EXPIRATION_MS = 1000L * 60 * 60 * 2;
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
