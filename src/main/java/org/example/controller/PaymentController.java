@@ -4,6 +4,7 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 
 import org.example.dto.PaymentRequest;
+import org.example.dto.PaymentDetailsDto;
 import org.example.model.Payment;
 import org.example.model.User;
 import org.example.repository.UserRepository;
@@ -64,18 +65,18 @@ public class PaymentController {
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<Payment>> getMyPayments(Principal principal) {
+    public ResponseEntity<List<PaymentDetailsDto>> getMyPayments(Principal principal) {
         User tenant = getCurrentUser(principal);
-        return ResponseEntity.ok(paymentService.getPaymentsByTenantId(tenant.getId()));
+        return ResponseEntity.ok(paymentService.getPaymentDetailsByTenantId(tenant.getId()));
     }
 
 
     @GetMapping("/booking/{bookingId}")
     @PreAuthorize("hasRole('LANDLORD')")
-    public ResponseEntity<List<Payment>> getPaymentsByBooking(
+    public ResponseEntity<List<PaymentDetailsDto>> getPaymentsByBooking(
             @PathVariable Long bookingId, Principal principal) {
         User landlord = getCurrentUser(principal);
-        return ResponseEntity.ok(paymentService.getPaymentsByBookingAndLandlord(
+        return ResponseEntity.ok(paymentService.getPaymentDetailsByBookingAndLandlord(
                 bookingId, landlord.getId()));
     }
 

@@ -19,6 +19,6 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     long countByOwnerEmail(@Param("email") String email);
 
     @Query("SELECT COUNT(p) FROM Property p JOIN Booking b ON b.property = p " +
-            "WHERE p.owner.email = :email AND b.status = 'ACTIVE'")
+            "WHERE p.owner.email = :email AND b.status IN ('confirmed','active')")
     long countRentedByOwnerEmail(@Param("email") String email);
 }

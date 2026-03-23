@@ -49,7 +49,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
         String role = request.role() == null ? "USER" : request.role().toUpperCase();
-        // Keep public registration minimal and safe.
         if (!role.equals("TENANT") && !role.equals("LANDLORD")) {
             return ResponseEntity.badRequest().body(Map.of("error", "Only TENANT or LANDLORD roles are allowed"));
         }

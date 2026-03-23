@@ -1,5 +1,6 @@
 package org.example.service;
 
+import org.example.dto.BookingDetailsDto;
 import org.example.model.Booking;
 import org.example.model.Property;
 import org.example.model.User;
@@ -35,7 +36,8 @@ public class BookingService {
                 .startDate(start)
                 .endDate(end)
                 .monthlyRent(property.getPricePerMonth())
-                .status("active")
+                // New workflow: landlord creates a request; tenant later accepts it.
+                .status("requested")
                 .build();
 
         return bookingRepository.save(booking);
@@ -69,5 +71,36 @@ public class BookingService {
 
     public List<Booking> getBookingsByLandlordId(Long landlordId) {
         return bookingRepository.findByPropertyOwnerId(landlordId);
+    }
+
+    public BookingDetailsDto toDetailsDto(Booking booking) {
+        BookingDetailsDto.TenantSummaryDto tenantDto = null;
+        if (booking.getTenant() != null) {
+            tenantDto = new BookingDetailsDto.TenantSummaryDto(
+                    booking.getTenant().getId(),
+                    booking.getTenant().getFullName(),
+                    booking.getTenant().getEmail()
+            );
+        }
+
+        BookingDetailsDto.PropertySummaryDto propertyDto = null;
+        if (booking.getProperty() != null) {
+            propertyDto = new BookingDetailsDto.PropertySummaryDto(
+                    booking.getProperty().getId(),
+                    booking.getProperty().getAddress(),
+                    booking.getProperty().getDescription(),
+                    booking.getProperty().getPricePerMonth()
+            );
+        }
+
+        return new BookingDetailsDto(
+                booking.getId(),
+                booking.getStartDate(),
+                booking.getEndDate(),
+                booking.getStatus(),
+                booking.getMonthlyRent(),
+                tenantDto,
+                propertyDto
+        );
     }
 }

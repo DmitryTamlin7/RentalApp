@@ -3,6 +3,7 @@ package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.dto.BookingRequest;
+import org.example.dto.BookingDetailsDto;
 import org.example.model.Booking;
 import org.example.model.Property;
 import org.example.model.User;
@@ -77,6 +78,32 @@ public class BookingController {
     }
 
     @PreAuthorize("hasRole('TENANT') or hasRole('ADMIN')")
+    @PutMapping("/{id}/accept")
+    public ResponseEntity<?> acceptBooking(@PathVariable Long id, Principal principal) {
+        User currentUser = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Booking booking = bookingService.getBookingById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not exist"));
+
+        // Tenant can accept only their own booking; ADMIN can accept any.
+        if ("TENANT".equalsIgnoreCase(currentUser.getRole())
+                && booking.getTenant() != null
+                && !booking.getTenant().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "You can only accept your own booking"));
+        }
+
+        if (!"requested".equalsIgnoreCase(booking.getStatus())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Booking is not in requested status"
+            ));
+        }
+
+        bookingService.updateBooking(id, null, null, "confirmed");
+        return ResponseEntity.ok(Map.of("message", "Бронь подтверждена"));
+    }
+
+    @PreAuthorize("hasRole('TENANT') or hasRole('ADMIN')")
     @GetMapping
     public List<Booking> getAll() {
         return bookingService.getAllBookings();
@@ -97,11 +124,14 @@ public class BookingController {
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<Booking>> getMyBookings(Principal principal) {
+    public ResponseEntity<List<BookingDetailsDto>> getMyBookings(Principal principal) {
         String email = principal.getName();
         User tenant = userRepository.findByEmail(email).orElseThrow();
         List<Booking> bookings = bookingRepository.findByTenantId(tenant.getId());
-        return ResponseEntity.ok(bookings);
+        List<BookingDetailsDto> result = bookings.stream()
+                .map(bookingService::toDetailsDto)
+                .toList();
+        return ResponseEntity.ok(result);
     }
 }
 

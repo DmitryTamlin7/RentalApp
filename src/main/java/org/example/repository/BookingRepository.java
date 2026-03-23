@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b " +
             "WHERE b.property.id = :propertyId " +
-            "AND b.status = 'ACTIVE'")
+            "AND b.status IN ('confirmed','active')")
     Optional<Booking> findActiveByPropertyId(@Param("propertyId") Long propertyId);
 
     List<Booking> findByPropertyOwnerId(Long ownerId);

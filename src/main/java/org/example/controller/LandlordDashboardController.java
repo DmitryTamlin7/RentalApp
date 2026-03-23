@@ -2,6 +2,7 @@ package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.dto.DirectBookingRequest;
+import org.example.dto.BookingDetailsDto;
 import org.example.dto.PropertyCardDto;
 import org.example.model.Booking;
 import org.example.model.Property;
@@ -48,10 +49,13 @@ public class LandlordDashboardController {
     }
 
     @GetMapping("/bookings")
-    public ResponseEntity<List<Booking>> getBookings(Principal principal) {
+    public ResponseEntity<List<BookingDetailsDto>> getBookings(Principal principal) {
         Long landlordId = getCurrentUserId(principal);
         List<Booking> bookings = bookingService.getBookingsByLandlordId(landlordId);
-        return ResponseEntity.ok(bookings);
+        List<BookingDetailsDto> result = bookings.stream()
+                .map(bookingService::toDetailsDto)
+                .toList();
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/bookings/{id}/confirm")
@@ -66,6 +70,13 @@ public class LandlordDashboardController {
         validateBookingOwnership(id, getCurrentUserId(principal));
         bookingService.updateBooking(id, null, null, "rejected");
         return ResponseEntity.ok("Бронь отклонена");
+    }
+
+    @PostMapping("/bookings/{id}/cancel")
+    public ResponseEntity<String> cancelBookingRequest(@PathVariable Long id, Principal principal) {
+        validateBookingOwnership(id, getCurrentUserId(principal));
+        bookingService.cancelBooking(id);
+        return ResponseEntity.ok("Запрос на бронь отменен");
     }
 
     @PostMapping("/bookings/direct")

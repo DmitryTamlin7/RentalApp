@@ -7,10 +7,12 @@ import org.example.model.Payment;
 import org.example.repository.BookingRepository;
 import org.example.repository.PaymentRepository;
 import org.example.repository.UserRepository;
+import org.example.dto.PaymentDetailsDto;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
@@ -72,8 +74,45 @@ public class PaymentService {
         return paymentRepository.findByBooking_Tenant_Id(tenantId);
     }
 
+    public List<PaymentDetailsDto> getPaymentDetailsByTenantId(Long tenantId) {
+        return paymentRepository.findByBooking_Tenant_Id(tenantId).stream()
+                .map(this::toPaymentDetailsDto)
+                .collect(Collectors.toList());
+    }
+
     public List<Payment> getPaymentsByBookingAndLandlord(Long bookingId, Long landlordId) {
         return paymentRepository.findByBookingIdAndBooking_Property_Owner_Id(bookingId, landlordId);
+    }
+
+    public List<PaymentDetailsDto> getPaymentDetailsByBookingAndLandlord(Long bookingId, Long landlordId) {
+        return paymentRepository.findByBookingIdAndBooking_Property_Owner_Id(bookingId, landlordId).stream()
+                .map(this::toPaymentDetailsDto)
+                .collect(Collectors.toList());
+    }
+
+    private PaymentDetailsDto toPaymentDetailsDto(Payment payment) {
+        Booking booking = payment.getBooking();
+
+        return new PaymentDetailsDto(
+                payment.getId(),
+                payment.getAmount(),
+                payment.getDescription(),
+                payment.getStatus(),
+                payment.getRequestedAt(),
+                payment.getTenantPaidAt(),
+                payment.getConfirmedAt(),
+
+                booking.getId(),
+                booking.getStartDate(),
+                booking.getEndDate(),
+                booking.getMonthlyRent(),
+
+                booking.getTenant() != null ? booking.getTenant().getFullName() : null,
+
+                booking.getProperty() != null ? booking.getProperty().getId() : null,
+                booking.getProperty() != null ? booking.getProperty().getAddress() : null,
+                booking.getProperty() != null ? booking.getProperty().getDescription() : null
+        );
     }
 
     private Payment getPayment(Long id) {
