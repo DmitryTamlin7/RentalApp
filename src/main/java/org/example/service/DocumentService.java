@@ -102,16 +102,15 @@ public class DocumentService {
             MultipartFile file
     ) {
         if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("title is required");
+            throw new IllegalArgumentException("Название обязательно");
         }
 
         String normalizedType = normalizeTypeRequired(documentType);
         if (!ALLOWED_TYPES.contains(normalizedType)) {
-            throw new IllegalArgumentException("Unsupported documentType");
+            throw new IllegalArgumentException("Неподдерживаемый тип");
         }
 
         if (bookingId == null && propertyId == null) {
-            // general document allowed for uploader only
         } else if (bookingId != null && propertyId != null) {
             throw new IllegalArgumentException("Only one of bookingId/propertyId can be set");
         }
@@ -125,7 +124,6 @@ public class DocumentService {
         if (bookingId != null) {
             booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found"));
-            // access validation: tenant or landlord of the booking
             boolean canUpload = (booking.getTenant() != null && booking.getTenant().getId().equals(userId))
                     || (booking.getProperty() != null && booking.getProperty().getOwner() != null && booking.getProperty().getOwner().getId().equals(userId));
             if (!canUpload) throw new RuntimeException("Access denied for booking document");
@@ -139,7 +137,7 @@ public class DocumentService {
             }
         }
 
-        // basic size limit for safety (10MB)
+
         long size = file.getSize();
         if (size <= 0 || size > 10 * 1024 * 1024) {
             throw new IllegalArgumentException("File size must be 1..10MB");
@@ -155,10 +153,10 @@ public class DocumentService {
         }
 
         if (!ALLOWED_MIME_TYPES.contains(mimeType)) {
-            throw new IllegalArgumentException("Unsupported file type. Allowed: PDF, JPG, PNG.");
+            throw new IllegalArgumentException("Неподдерживаемый тип. Нужен: PDF, JPG, PNG.");
         }
 
-        // Sanitize object key
+
         String safeOriginal = originalFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
         String objectKey = userId + "/" + UUID.randomUUID() + "_" + safeOriginal;
 
@@ -172,7 +170,7 @@ public class DocumentService {
                             .build()
             );
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload to MinIO", e);
+            throw new RuntimeException("ОШибка загрузки MinIO", e);
         }
 
         Document doc = Document.builder()
@@ -238,7 +236,6 @@ public class DocumentService {
             }
             return;
         }
-        // general docs
         if (doc.getUploadedBy() == null || !doc.getUploadedBy().getId().equals(userId)) {
             throw new RuntimeException("Access denied");
         }
