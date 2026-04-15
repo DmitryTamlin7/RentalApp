@@ -4,6 +4,9 @@ import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.example.config.MinioConfig.MinioProperties;
 import org.example.dto.DocumentDetailsDto;
 import org.example.model.Booking;
@@ -26,13 +29,13 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class DocumentService {
+    private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
 
     private static final Set<String> ALLOWED_TYPES = Set.of(
             "CONTRACT",
@@ -50,6 +53,8 @@ public class DocumentService {
 
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
+    @Value("${minio.ensure-bucket-on-startup:true}")
+    private boolean ensureBucketOnStartup;
 
     private final DocumentRepository documentRepository;
     private final BookingRepository bookingRepository;
@@ -58,6 +63,10 @@ public class DocumentService {
 
     @PostConstruct
     public void ensureBucket() {
+        if (!ensureBucketOnStartup) {
+            log.info("MinIO bucket startup check is disabled by configuration");
+            return;
+        }
         try {
             boolean exists = minioClient.bucketExists(
                     BucketExistsArgs.builder().bucket(minioProperties.getBucket()).build()
@@ -68,7 +77,8 @@ public class DocumentService {
                 );
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to ensure MinIO bucket exists", e);
+            throw new RuntimeException("Failed to ensure MinIO bucket exists. " +
+                    "Set minio.ensure-bucket-on-startup=false for test environments.", e);
         }
     }
 

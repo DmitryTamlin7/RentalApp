@@ -16,6 +16,7 @@ minio:
   accessKey: minioadmin
   secretKey: minioadmin
   bucket: rental-documents-test
+  ensure-bucket-on-startup: false
 
 logging:
   level:
