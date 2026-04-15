@@ -111,7 +111,7 @@ class DocumentsIntegrationTest {
                 "%PDF-1.4".getBytes()
         );
 
-        // Upload by landlord for booking
+
         mockMvc.perform(multipart("/api/documents")
                         .file(file)
                         .param("title", "Signed contract")
@@ -123,7 +123,7 @@ class DocumentsIntegrationTest {
                 .andExpect(jsonPath("$.documentType", is("CONTRACT")))
                 .andExpect(jsonPath("$.bookingId", is(bookingId.intValue())));
 
-        // List visible for tenant, with filter
+
         mockMvc.perform(get("/api/documents")
                         .param("q", "Signed")
                         .param("documentType", "CONTRACT")
@@ -134,7 +134,7 @@ class DocumentsIntegrationTest {
                 .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
                 .andExpect(jsonPath("$.content[0].originalFileName", is("contract.pdf")));
 
-        // Download first doc id from list (simple parse)
+
         String listJson = mockMvc.perform(get("/api/documents")
                         .param("page", "0")
                         .param("size", "10")

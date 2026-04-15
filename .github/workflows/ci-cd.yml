@@ -1,61 +1,84 @@
-name: CI/CD Pipeline
+name: backend-ci-cd
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/rental-backend
 
 jobs:
-  build-and-deploy:
+  quality-and-tests:
     runs-on: ubuntu-latest
-
     services:
-      db:
-        image: postgres:15
+      postgres:
+        image: postgres:16-alpine
         env:
           POSTGRES_DB: rentaldb
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: Soadsvanpjz228123
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U rental"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
+          --health-cmd "pg_isready -U postgres -d rentaldb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
+          cache: gradle
 
-      - name: Build with Gradle
-        run: ./gradlew clean build --no-daemon
+      - name: Verify code quality
+        run: ./gradlew check --no-daemon
 
-      - name: Run application
-        run: ./gradlew bootRun &
+      - name: Build production jar
+        run: ./gradlew bootJar --no-daemon
 
-      - name: Wait for server
-        run: |
-          echo "Waiting for Spring Boot to start..."
-          sleep 20
+  docker-image:
+    runs-on: ubuntu-latest
+    needs: quality-and-tests
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
 
-      - name:  Check endpoints
-        run: |
-          endpoints=(/api/users /api/properties /api/bookings)
-          for endpoint in "${endpoints[@]}"; do
-            echo "Checking $endpoint ..."
-            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080$endpoint)
-            if [ "$response" = "200" ]; then
-              echo " $endpoint works (HTTP 200)"
-            else
-              echo " $endpoint failed (HTTP $response)"
-              exit 1
-            fi
-          done
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger remote deployment
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            docker compose up -d --build backend
+            docker compose ps

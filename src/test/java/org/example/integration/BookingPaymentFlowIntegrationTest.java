@@ -39,7 +39,7 @@ class BookingPaymentFlowIntegrationTest {
     @Autowired PropertyRepository propertyRepository;
     @Autowired PasswordEncoder passwordEncoder;
 
-    @MockBean MinioClient minioClient; // DocumentService @PostConstruct
+    @MockBean MinioClient minioClient;
 
     private Long landlordId;
     private Long tenantId;
@@ -47,7 +47,7 @@ class BookingPaymentFlowIntegrationTest {
 
     @BeforeEach
     void init() throws Exception {
-        // make DocumentService.ensureBucket not fail
+
         when(minioClient.bucketExists(any())).thenReturn(true);
 
         var landlord = TestUsers.ensureUser(userRepository, passwordEncoder, "landlord@test.com", "Pass123", "Land Lord", "LANDLORD");
@@ -68,7 +68,6 @@ class BookingPaymentFlowIntegrationTest {
 
     @Test
     void landlordCreatesBookingRequest_tenantAccepts_landlordRequestsPayment_tenantPays_landlordConfirms() throws Exception {
-        // Landlord creates direct booking request
         var bookingRes = mockMvc.perform(post("/api/dashboard/landlord/bookings/direct")
                         .with(user("landlord@test.com").roles("LANDLORD"))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,22 +80,22 @@ class BookingPaymentFlowIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        // Parse bookingId very simply
+
         long bookingId = Long.parseLong(bookingRes.replaceAll(".*\"bookingId\"\\s*:\\s*(\\d+).*", "$1"));
 
-        // Tenant sees booking with property address in /api/bookings/my
+
         mockMvc.perform(get("/api/bookings/my")
                         .with(user("tenant@test.com").roles("TENANT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].property.address", is("Москва Арбат 44")));
 
-        // Tenant accepts booking
+
         mockMvc.perform(put("/api/bookings/%d/accept".formatted(bookingId))
                         .with(user("tenant@test.com").roles("TENANT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message", containsString("подтверждена")));
 
-        // Landlord requests payment
+
         var payRes = mockMvc.perform(post("/api/payments/request")
                         .with(user("landlord@test.com").roles("LANDLORD"))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,12 +110,12 @@ class BookingPaymentFlowIntegrationTest {
 
         long paymentId = Long.parseLong(payRes.replaceAll(".*\"paymentId\"\\s*:\\s*(\\d+).*", "$1"));
 
-        // Tenant marks paid
+
         mockMvc.perform(post("/api/payments/%d/tenant-paid".formatted(paymentId))
                         .with(user("tenant@test.com").roles("TENANT")))
                 .andExpect(status().isOk());
 
-        // Landlord sees payment status tenant_paid via DTO
+
         mockMvc.perform(get("/api/payments/booking/%d".formatted(bookingId))
                         .with(user("landlord@test.com").roles("LANDLORD")))
                 .andExpect(status().isOk())
@@ -124,7 +123,7 @@ class BookingPaymentFlowIntegrationTest {
                 .andExpect(jsonPath("$[0].propertyAddress", is("Москва Арбат 44")))
                 .andExpect(jsonPath("$[0].description", is("Аренда за март")));
 
-        // Landlord confirms
+
         mockMvc.perform(post("/api/payments/%d/confirm".formatted(paymentId))
                         .with(user("landlord@test.com").roles("LANDLORD")))
                 .andExpect(status().isOk());
